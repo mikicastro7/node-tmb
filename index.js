@@ -41,6 +41,23 @@ inquirer.prompt([
     message: "¿Qué línea quiere consultar?"
   }
 ])
-  .then(res => {
-
+  .then(respuestasUsurio => {
+    fetch(`https://api.tmb.cat/v1/transit/linies/metro?filter=NOM_LINIA='${respuestasUsurio.linea}'&app_id=a372a6d9&app_key=de3506372e19c90a75a39c1fa2dc9fb7`)
+      .then(res => res.json())
+      .then(res => {
+        if (res.numberMatched === 0) {
+          if (respuestasUsurio.errores) {
+            console.log(chalk.red.bold(`no existe la línea${respuestasUsurio.linea}`));
+            process.exit(0);
+          } else {
+            process.exit(0);
+          }
+        } else {
+          let colorConsola;
+          if (program.opts().color !== false) {
+            colorConsola = program.opts().color;
+          } else colorConsola = res.features[0].properties.COLOR_LINIA;
+          console.log(chalk.hex(colorConsola)(`${res.features[0].properties.NOM_LINIA} ${res.features[0].properties.DESC_LINIA}`));
+        }
+      });
   });
